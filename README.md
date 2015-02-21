@@ -2,7 +2,7 @@
 Is a work in progress gem that aims to put a easy to us wrapper around Bungie.net's largly undocumented Platfrom.  The will only focus on information related to Destiny, but will also provide access to other parts of the platform such as groups.
 
 ##Compatibility
-This get is a work in progress.  No testing as been done at this point.
+This gem is a work in progress.  No testing as been done at this point.
 
 ## Installation
 Add this line to your application's Gemfile:
