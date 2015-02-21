@@ -12,16 +12,17 @@ gem 'destiny-ruby'
 ```
 
 And then execute:
-
+```ruby    
     $ bundle
-
+```
+    
 Or install it yourself as:
-
+```ruby
     $ gem install destiny-ruby
-````
+```
 
 ## Usage
-Currently only the Membership Resource is available.  You can access it like so:
+Currently only the Membership resource is available.  You can access it like so:
 
 ````ruby
   destiny_client = Destiny.new
