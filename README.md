@@ -1,15 +1,14 @@
-# DestinyPlatform
+# Destiny
+Is a work in progress gem that aims to put a easy to us wrapper around Bungie.net's largly undocumented Platfrom.  The will only focus on information related to Destiny, but will also provide access to other parts of the platform such as groups.
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/destiny_platform`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+##Compatibility
+This get is a work in progress.  No testing as been done at this point.
 
 ## Installation
-
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'destiny_platform'
+gem 'destiny-ruby'
 ```
 
 And then execute:
@@ -18,13 +17,28 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install destiny_platform
+    $ gem install destiny-ruby
+````
 
 ## Usage
+Currently only the Membership Resource is available.  You can access it like so:
 
-TODO: Write usage instructions here
+````ruby
+  destiny_client = Destiny.new
+  my_membership = destiny_client.memberships.get "mygamertag"
+  my_membership.membership_id
+  => "4611111111431694039"
+````
 
-## Development
+If your Destiny character's are on Playstation you will need to specify the console:
+
+````ruby
+  destiny_client = Destiny.new({ console: :playstation })
+````
+
+Xbox will be default for this gem, so if you are an Xbox user you will not have to specify the console.
+
+## Development.
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `bin/console` for an interactive prompt that will allow you to experiment. 
 
@@ -37,3 +51,5 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create a new Pull Request
+
+##
