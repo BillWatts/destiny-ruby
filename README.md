@@ -39,6 +39,8 @@ If your Destiny character's are on Playstation you will need to specify the cons
 
 Xbox will be default for this gem, so if you are an Xbox user you will not have to specify the console.
 
+Please checkout the wiki for a full list of available resources and available attributes.
+
 ## Development.
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `bin/console` for an interactive prompt that will allow you to experiment. 
