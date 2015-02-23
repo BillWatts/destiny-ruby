@@ -37,7 +37,7 @@ module Destiny
 
     ###
     # Setting publicly accessible object for the class.
-    attr_reader :config, :memberships
+    attr_reader :config, :memberships, :races, :genders, :classes
 
     ###
     # initialize:  Merges default configuration with any custom options passed into the Client class on
@@ -112,6 +112,9 @@ module Destiny
     # setup_resources: Initializes the specified resources making them available after Client has been initialized.
     def setup_resources
       @memberships = Memberships.new '', self
+      @races = Races.new '', self
+      @genders = Genders.new '', self
+      @classes = Classes.new '', self
     end
 
     ###
@@ -135,7 +138,7 @@ module Destiny
       end
 
       object = parse_response response
-
+      #p object
       if response.body and !response.body.empty?
         object = MultiJson.load response.body
       end

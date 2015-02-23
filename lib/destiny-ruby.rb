@@ -12,7 +12,12 @@ module Destiny
   require 'destiny-ruby/errors'
   
   require 'destiny-ruby/client'
-  require 'destiny-ruby/membership'
+  require 'destiny-ruby/memberships'
+  require 'destiny-ruby/accounts'
+  require 'destiny-ruby/characters'
+  require 'destiny-ruby/races'
+  require 'destiny-ruby/genders'
+  require 'destiny-ruby/classes'
 
   class << self
     def new(options={})
