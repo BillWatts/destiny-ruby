@@ -6,33 +6,14 @@ module Destiny
     include Utils
 
     ###
-    # Bungie references the difference platforms by "Membership Type" below maps each 
-    # to its designated id.
-    CONSOLE_MAP = {
-      xbox: 1,
-      playstation: 2
-    }
-
-    ###
     # Default configuration including Bungie base URL, HTTP settings, and basic information
     # that will be referenced throughout the gem.
     DEFAULTS = {
       host: 'www.bungie.net',
-      port: 80,
-      use_ssl: false,
-      ssl_verify_peer: false,
-      ssl_ca_file: nil,
       timeout: 30,
-      proxy_address: nil,
-      proxy_user: nil,
-      proxy_password: nil,
-      retries: 1,
-      device_type: 'Ruby',
       console: :xbox,
-      console_id: 1,
       membership_id: nil,
       group_id: nil,
-      platform: :destiny
     }
 
     ###
@@ -45,7 +26,6 @@ module Destiny
     # also set depending on the `:console` that is passed using the `CONSOLE_MAP`.
     def initialize(options={})
       @config = DEFAULTS.merge! options
-      @config[:console_id] = CONSOLE_MAP[@config[:console]] if CONSOLE_MAP.has_key? @config[:console]
 
       setup_connection
       setup_resources
@@ -123,6 +103,7 @@ module Destiny
     def send_request(request)
       @previous_request = request
       retries_remaining = @config[:retries]
+      json = nil
 
       begin
         response = @connection.request request
@@ -131,19 +112,21 @@ module Destiny
         if response.kind_of? Net::HTTPServerError
           object = parse_response response
           raise Destiny::ServerError.new object['error']['message'], object['error']['code']
+        else
+          json = parse_response()
         end
+
+        
       rescue Exception
         raise if request.class == Net::HTTP::Post
         if retries_remaining > 0 then retries_remaining -= 1; retry else raise end
       end
 
-      object = parse_response response
-      #p object
-      if response.body and !response.body.empty?
-        object = MultiJson.load response.body
-      end
+      
 
-      object
+
+
+      json
     end
 
     ###

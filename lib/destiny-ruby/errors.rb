@@ -17,7 +17,16 @@ module Destiny
     end
   end
 
-  class InputError < StandardError
+  class ConfigError < ArgumentError
+    attr_reader :code
+
+    def initialize(message, code=nil)
+      super message
+      @code = code
+    end
+  end
+
+  class ParameterError < ArgumentError
     attr_reader :code
 
     def initialize(message, code=nil)
