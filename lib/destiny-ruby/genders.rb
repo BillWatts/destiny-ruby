@@ -9,7 +9,6 @@ module Destiny
     ###
     # initialize: Initializes a Genders object.  Also manually sets the path for the resource.
     def initialize(path, client, params={})
-      path = "Destiny/Manifest/Gender"
       super path, client, params
     end
   end

@@ -18,7 +18,8 @@ module Destiny
 
     ###
     # Setting publicly accessible object for the class.
-    attr_reader :config, :memberships, :races, :genders, :classes
+    attr_reader :config, :memberships, :races, :genders, :classes,
+      :armors
 
     ###
     # initialize:  Merges default configuration with any custom options passed into the Client class on
@@ -37,7 +38,7 @@ module Destiny
     [:get].each do |method|
       method_class = Net::HTTP.const_get method.to_s.capitalize
 
-      define_method method do |path, params|
+      define_method method do |params, path|
         params = {} if params.nil? or params.empty?
 
         ###
@@ -69,32 +70,18 @@ module Destiny
       connection = Net::HTTP::Proxy @config[:proxy_address], @config[:proxy_port], @config[:proxy_user], @config[:proxy_address]
       @connection = connection.new @config[:host], @config[:port]
 
-      setup_ssl if @config[:use_ssl]
-
       @connection.open_timeout = @config[:timeout]
       @connection.read_timeout = @config[:timeout]
     end
 
     ###
-    # setup_ssl: If the user sets the `:use_ssl` options to true this method will setup the SSL configuration.
-    def setup_ssl
-      @connection.use_ssl = @config[:use_ssl]
-
-      if @config[:ssl_verify_peer]
-        @connection.verify_mdoe = OpenSSL::SSL::VERIFY_PEER
-        @connection.ca_file = @config[:ssl_ca_file]
-      else
-        @connection.verify_mode = OpenSSL::SSL::VERIFY_NONE
-      end
-    end
-
-    ###
     # setup_resources: Initializes the specified resources making them available after Client has been initialized.
     def setup_resources
-      @memberships = Memberships.new '', self
-      @races = Races.new '', self
-      @genders = Genders.new '', self
-      @classes = Classes.new '', self
+      @memberships = Memberships.new self
+      # @races = Races.new self
+      # @genders = Genders.new self
+      # @classes = Classes.new self
+      # @armors = Armors.new self
     end
 
     ###
@@ -103,8 +90,8 @@ module Destiny
     def send_request(request)
       @previous_request = request
       retries_remaining = @config[:retries]
-      json = nil
-
+      json = {}
+ 
       begin
         response = @connection.request request
         @previous_request = response
@@ -113,18 +100,17 @@ module Destiny
           object = parse_response response
           raise Destiny::ServerError.new object['error']['message'], object['error']['code']
         else
-          json = parse_response()
+          json = parse_response(response)
         end
 
         
       rescue Exception
-        raise if request.class == Net::HTTP::Post
-        if retries_remaining > 0 then retries_remaining -= 1; retry else raise end
+
       end
 
       
 
-
+      p json
 
       json
     end

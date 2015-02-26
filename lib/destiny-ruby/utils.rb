@@ -63,20 +63,6 @@ module Destiny
   def valdiate_page_count(value)
 
   end
-
-  def get_console_id(console)
-    valid_consoles = { xbox: 1, playstation: 2 }
-
-    if valid_consoles.has_key? console
-      valid_consoles[console]
-    else
-      raise Destiny::ConfigError.new "Specified console is not valid", -1
-    end
-  end
-
-  
-
- 
 end
 
 class String

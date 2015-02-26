@@ -6,7 +6,7 @@ module Destiny
     ###
     # initialize: Initializes a Membership object.
     def initialize(path, client, params={})
-      path = "Destiny/#{client.config[:console_id]}/Account/#{client.config[:membership_id]}"
+      path = "Destiny/#{get_console_id(client.config[:console_id])}/Account/#{client.config[:membership_id]}"
       super path, client, params
 
       resource :characters

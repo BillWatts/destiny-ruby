@@ -5,12 +5,12 @@ module Destiny
   #
   # TODO: Retrieving of multiple memberships currently will now work with current code.
   class Memberships < PlatformObjects
+    include Utils
 
     ###
     # initialize: Initializes a Memberships object.  Also manually sets the path for the resource.
-    def initialize(path, client, params={})
-      path = "Destiny/SearchDestinyPlayer/#{client.config[:console_id]}"
-      super path, client, params
+    def initialize(client, params={}, path="Destiny/SearchDestinyPlayer/#{get_console_id(client.config[:console])}")
+      super client, params, path
     end
   end
 
@@ -20,19 +20,24 @@ module Destiny
 
     ###
     # initialize: Initializes a Membership object.
-    def initialize(path, client, params={})
-      super path, client, params
+    def initialize(client, params={}, path=nil)
+      super client, params, path
       client.config[:membership_id] = self.membership_id
 
-      resource :account
+      #resource :account
     end
 
     protected
 
     ###
     # setup_properties: Accepts a hash that is looped through so attribute can be accessed on each resource object.
-    def setup_properties(hash)
-      hash = hash["Response"].first if hash.has_key? "Response"
+    def setup_properties(hash={})
+      if hash.is_a? Hash and hash.has_key? "Response"
+        hash = hash["Response"].first 
+      else
+        hash = {}
+      end
+
       create_class_methods hash
     end
   end

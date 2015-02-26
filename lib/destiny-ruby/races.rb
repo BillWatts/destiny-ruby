@@ -9,7 +9,6 @@ module Destiny
     ###
     # initialize: Initializes a Memberships object.  Also manually sets the path for the resource.
     def initialize(path, client, params={})
-      path = "Destiny/Manifest/Race"
       super path, client, params
     end
   end

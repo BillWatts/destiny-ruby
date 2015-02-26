@@ -7,7 +7,7 @@ module Destiny
 
     ###
     # initialize: Creates the new object based on the parent module and current resource being accessed.
-    def initialize(path, client, params={})
+    def initialize(client, params={}, path=nil)
       @path, @client = path, client
       instance_name = self.class.name.split('::').last.singularize
       parent_module = self.class.to_s.split('::').first
@@ -22,14 +22,11 @@ module Destiny
     #
     # TODO: This was pulled from a previous gem.  May need to be reworked in order to work with
     # Bungie's data.
-    def list(params={})
-      raise "Can't list Object without a client" unless @client
+    def list(params={},instance_path=nil)
       response = @client.get @path, params
       resources = response["Response"]["data"]
-      p resources
 
       resource_list = resources.map do |resource|
-        p resource
         @instance_class.new "#{@path.split('?').first}/#{resource['name']}", @client, resource
       end
 
@@ -42,9 +39,22 @@ module Destiny
     # get: Creates a new instances of the particular resource object.  This does not execute a
     # HTTP request.  HTTP request are not made until the user tries to access an attribute.
     def get(id)
-      instance = @instance_class.new "#{@path}/#{id}", @client
+      instance = @instance_class.new @client, nil, "#{@path}/#{id}"
     end
     alias :find :get
+
+    ###
+    # get_console_id: Translates the specified console passed in the config to the 
+    # appropriate Bungie membership type.  If invalid type an error is raised.
+    def get_console_id(console)
+      valid_consoles = { xbox: 1, playstation: 2 }
+
+      if valid_consoles.has_key? console
+        valid_consoles[console]
+      else
+        raise Destiny::ConfigError.new "Console is not supported", -1
+      end
+    end
   end
 
   ###
@@ -54,7 +64,7 @@ module Destiny
     
     ###
     # initialize: Creates a new objects based on the passed variables.
-    def initialize(path, client, params={})
+    def initialize(client, params={}, path=nil)
       @path, @client = path, client
       setup_properties params
     end
@@ -78,7 +88,7 @@ module Destiny
     # for lazy loading of a singular resource object attributes.
     def method_missing(method, *args)
       #super if @updated
-      setup_properties(@client.get(@path,nil))
+      setup_properties(@client.get(nil,@path))
       self.send method, *args
     end
 
@@ -92,7 +102,7 @@ module Destiny
         path = "#{@path}/#{resource.downcase}"
         enclosed_module = @sub_module == nil ? (Destiny) : (Destiny.const_get(@sub_module))
         resource_class = enclosed_module.const_get resource
-        instance_variable_set("@#{r}", resource_class.new(path, @client))
+        instance_variable_set("@#{r}", resource_class.new(@client,nil,path))
       end
 
       self.class.instance_eval { attr_reader *resources }
