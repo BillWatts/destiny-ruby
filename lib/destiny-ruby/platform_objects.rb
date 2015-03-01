@@ -24,7 +24,7 @@ module Destiny
     # Bungie"s data.
     def list(params={},instance_path=nil)
       params[:definitions] = true
-   
+
       response = @client.get params, @path 
       resources = response["data"]["itemHashes"]
 
@@ -50,19 +50,6 @@ module Destiny
       instance = @instance_class.new @client, nil, "#{@path}/#{id}"
     end
     alias :find :get
-
-    ###
-    # get_console_id: Translates the specified console passed in the config to the 
-    # appropriate Bungie membership type.  If invalid type an error is raised.
-    def get_console_id(console)
-      valid_consoles = { xbox: 1, playstation: 2 }
-
-      if valid_consoles.has_key? console
-        valid_consoles[console]
-      else
-        raise Destiny::ConfigError.new "Console is not supported", -1
-      end
-    end
   end
 
   ###
