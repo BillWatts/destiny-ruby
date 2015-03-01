@@ -9,9 +9,10 @@ module Destiny
     # Default configuration including Bungie base URL, HTTP settings, and basic information
     # that will be referenced throughout the gem.
     DEFAULTS = {
-      host: 'www.bungie.net',
+      host: "www.bungie.net",
       timeout: 30,
       console: :xbox,
+      console_id: 1,
       membership_id: nil,
       group_id: nil,
     }
@@ -19,7 +20,7 @@ module Destiny
     ###
     # Setting publicly accessible object for the class.
     attr_reader :config, :memberships, :races, :genders, :classes,
-      :armors
+      :items
 
     ###
     # initialize:  Merges default configuration with any custom options passed into the Client class on
@@ -27,6 +28,8 @@ module Destiny
     # also set depending on the `:console` that is passed using the `CONSOLE_MAP`.
     def initialize(options={})
       @config = DEFAULTS.merge! options
+
+      @config[:console_id] = get_console_id @config[:console]
 
       setup_connection
       setup_resources
@@ -44,11 +47,11 @@ module Destiny
         ###
         # All known Bungie resources start with "/Platform" in the path and end with a trailing "/".
         # not adding the trailing slash causes Bungie to redirect to the path with a trailing "/".
-        path = '/Platform/' + path + '/'
+        path = "/Platform/" + path + "/"
 
         ###
         # If there are parameters, url encode them and add them to the path as query parameters.
-        path << '&#{url_encode(params)}' unless params.empty? 
+        path << "?#{url_encode(params)}" unless params.empty? 
 
         ###
         # Create new GET request with path.  Also take parameters and dump them in to the request
@@ -81,7 +84,7 @@ module Destiny
       # @races = Races.new self
       # @genders = Genders.new self
       # @classes = Classes.new self
-      # @armors = Armors.new self
+      @items = Items.new self
     end
 
     ###
@@ -92,25 +95,15 @@ module Destiny
       retries_remaining = @config[:retries]
       json = {}
  
-      begin
-        response = @connection.request request
-        @previous_request = response
+      response = @connection.request request
+      @previous_request = response
 
-        if response.kind_of? Net::HTTPServerError
-          object = parse_response response
-          raise Destiny::ServerError.new object['error']['message'], object['error']['code']
-        else
-          json = parse_response(response)
-        end
-
-        
-      rescue Exception
-
+      if response.kind_of? Net::HTTPServerError
+        object = parse_response response
+        raise Destiny::ServerError.new object["error"]["message"], object["error"]["code"]
+      else
+        json = parse_response(response)
       end
-
-      
-
-      p json
 
       json
     end
@@ -122,9 +115,33 @@ module Destiny
 
       if response.body and !response.body.empty?
         object = MultiJson.load response.body
+
+        if object.has_key? "ErrorStatus"
+          if object["ErrorStatus"].eql?("NotFound") or object["ErrorStatus"].eql?("ParameterParseFailure")
+            raise Destiny::RequestError.new "#{object["ErrorStatus"].humanize}: #{object["Message"]}", object["ErrorCode"]
+          end
+        end
+
+        if object.has_key? "Response"
+          object = object["Response"]
+        else
+          raise Destiny::RequestError.new "Empty Response: The request returned no data", -1
+        end
+      else
+        raise Destiny::RequestError.new "Empty Response: The request returned no data", -1
       end
 
       object
+    end
+
+    def get_console_id(console)
+      accepted_consoles = { xbox: 1, playstation: 2 }
+
+      if accepted_consoles.has_key? console
+        accepted_consoles[console]
+      else
+        raise Destiny::ConfigError.new "Unsupported console specified", -1
+      end
     end
   end
 end
