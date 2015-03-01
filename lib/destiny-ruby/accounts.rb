@@ -5,11 +5,11 @@ module Destiny
 
     ###
     # initialize: Initializes a Membership object.
-    def initialize(path, client, params={})
-      path = "Destiny/#{get_console_id(client.config[:console_id])}/Account/#{client.config[:membership_id]}"
-      super path, client, params
+    def initialize(client, params={}, path=nil)
+      path = "Destiny/#{client.config[:console_id]}/Account/#{client.config[:membership_id]}"
+      super client, params, path
 
-      resource :characters
+      # resource :characters
     end
 
     protected
@@ -17,14 +17,10 @@ module Destiny
     ###
     # setup_properties: Overrides the existing setup_properties of PlatformObject until it can be determined
     # that Bungie's responses are uniform. 
-    def setup_properties(hash)
-      hash = hash["Response"]["data"] if hash.has_key? "Response" and hash["Response"].has_key? "data" 
+    def setup_properties(obj={}, ignore_attributes=[])
+      obj = obj["data"] if obj.is_a? Hash and obj.has_key? "data" 
 
-      ["characters", "inventory", "membershipId", "membershipType"].each do |attribute|
-        hash.delete(attribute)
-      end
-
-      create_class_methods hash
+      super obj, ["characters", "inventory", "membershipId", "membershipType"]
     end
   end
 end
