@@ -50,19 +50,6 @@ module Destiny
       end.join
     end
   end
-
-  def validate_class(value)
-    valid_classes = [:warlock, :titan, :hunter]
-  end
-
-  def validate_category(value) 
-    valid_categories = [:artifact, :materials, :consumables, :mission, :bounties, :build, :primary_weapon, 
-      :special_weapon, :heavy_weapon, :head, :arms, :chest, :legs, :class_items, :ghosts, :vehicle, :ship, :shader, :emblem]
-  end
-
-  def valdiate_page_count(value)
-
-  end
 end
 
 class String
