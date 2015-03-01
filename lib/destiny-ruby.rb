@@ -18,7 +18,7 @@ module Destiny
   require 'destiny-ruby/races'
   require 'destiny-ruby/genders'
   require 'destiny-ruby/classes'
-  require 'destiny-ruby/armors'
+  require 'destiny-ruby/items'
 
   class << self
     def new(options={})
