@@ -9,8 +9,9 @@ module Destiny
 
     ###
     # initialize: Initializes a Memberships object.  Also manually sets the path for the resource.
-    def initialize(client, params={}, path="Destiny/SearchDestinyPlayer/#{get_console_id(client.config[:console])}")
-      super client, params, path
+    def initialize(client, params={})
+      super client, params
+      @path = "Destiny/SearchDestinyPlayer/#{client.config[:console_id]}"
     end
   end
 
@@ -24,21 +25,15 @@ module Destiny
       super client, params, path
       client.config[:membership_id] = self.membership_id
 
-      #resource :account
+      resource :account
     end
 
     protected
 
     ###
     # setup_properties: Accepts a hash that is looped through so attribute can be accessed on each resource object.
-    def setup_properties(hash={})
-      if hash.is_a? Hash and hash.has_key? "Response"
-        hash = hash["Response"].first 
-      else
-        hash = {}
-      end
-
-      create_class_methods hash
+    def setup_properties(obj={}, ignore_attributes=[])
+      super obj, ignore_attributes
     end
   end
 end
