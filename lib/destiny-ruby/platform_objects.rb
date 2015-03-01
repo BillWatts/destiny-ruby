@@ -7,12 +7,12 @@ module Destiny
 
     ###
     # initialize: Creates the new object based on the parent module and current resource being accessed.
-    def initialize(client, params={}, path=nil)
-      @path, @client = path, client
-      instance_name = self.class.name.split('::').last.singularize
-      parent_module = self.class.to_s.split('::').first
+    def initialize(client, params={})
+      @path, @client = nil, client
+      instance_name = self.class.name.split("::").last.singularize
+      parent_module = self.class.to_s.split("::").first
       
-      full_module_path = parent_module == 'Destiny' ? (Destiny) : (Destiny.cost_get parent_module)
+      full_module_path = parent_module == "Destiny" ? (Destiny) : (Destiny.cost_get parent_module)
 
       @instance_class = full_module_path.const_get instance_name
     end
@@ -21,13 +21,21 @@ module Destiny
     # list: Executes a HTTP request to retrieve a list of objects for the specified resource.
     #
     # TODO: This was pulled from a previous gem.  May need to be reworked in order to work with
-    # Bungie's data.
+    # Bungie"s data.
     def list(params={},instance_path=nil)
-      response = @client.get @path, params
-      resources = response["Response"]["data"]
+      params[:definitions] = true
+   
+      response = @client.get params, @path 
+      resources = response["data"]["itemHashes"]
 
       resource_list = resources.map do |resource|
-        @instance_class.new "#{@path.split('?').first}/#{resource['name']}", @client, resource
+        props = {}
+
+        if response.has_key? "definitions"
+          props = response["definitions"]["items"]["#{resource}"]
+        end
+
+        @instance_class.new @client, props, "#{resource}"
       end
 
       client, list_class = @client, self.class
@@ -64,7 +72,7 @@ module Destiny
     
     ###
     # initialize: Creates a new objects based on the passed variables.
-    def initialize(client, params={}, path=nil)
+    def initialize(client, params={}, path)
       @path, @client = path, client
       setup_properties params
     end
@@ -84,12 +92,21 @@ module Destiny
 
     ###
     # method_missing: When trying to access an objects attributes, if method_missing is called meaning 
-    # the attribute doesn't exists an HTTP call will be made to retrieve that attribute.  This allows
+    # the attribute doesn"t exists an HTTP call will be made to retrieve that attribute.  This allows
     # for lazy loading of a singular resource object attributes.
     def method_missing(method, *args)
       #super if @updated
       setup_properties(@client.get(nil,@path))
-      self.send method, *args
+
+      if self.methods.include? method
+        self.send method, *args
+      else
+        raise Destiny::PropertyError.new "Attribute does not exist", -1
+      end
+    end
+
+    def refresh
+
     end
 
     protected
@@ -108,10 +125,22 @@ module Destiny
       self.class.instance_eval { attr_reader *resources }
     end
 
-    def create_class_methods(hash)
-      tmpclass = class << self; self; end
-      hash.each do |key,val|
-        tmpclass.send :define_method, key.underscore.to_sym, &lambda { val }
+    ###
+    # setup_properties: Accepts a hash that is looped through so attribute can be accessed on each resource object.
+    def setup_properties(obj={}, ignore_attributes=[])
+      if obj.is_a? Array
+        obj.each do |o|
+          setup_properties o, ignore_attributes
+        end
+      elsif obj.is_a? Hash
+        tmpclass = class << self; self; end
+        obj.each do |key,val|
+          unless ignore_attributes.include? key
+            tmpclass.send :define_method, key.underscore.to_sym, &lambda { val }
+          end
+        end
+      elsif !obj.is_a? NilClass
+        {}
       end
     end
   end
